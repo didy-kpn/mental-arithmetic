@@ -1,0 +1,9 @@
+[workspace]
+members = [
+  "mental-arithmetic-adapter",
+  "mental-arithmetic-cui",
+  "mental-arithmetic-domain",
+  "mental-arithmetic-infrastructure",
+  "mental-arithmetic-gui",
+  "mental-arithmetic-usecase",
+]
