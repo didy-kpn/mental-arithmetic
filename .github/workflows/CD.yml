@@ -1,0 +1,78 @@
+name: CD
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  cui:
+    name: Publish for ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            artifact_name: mental-arithmetic-cui
+            asset_name: mental-arithmetic-linux-amd64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: mental-arithmetic-cui.exe
+            asset_name: mental-arithmetic-windows-amd64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: mental-arithmetic-cui
+            asset_name: mental-arithmetic-macos-amd64
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          target: ${{ matrix.target }}
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --bin mental-arithmetic-cui --release --target ${{ matrix.target }} --locked
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/${{ matrix.target }}/release/${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
+  gui-build:
+    name: GUI Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: rustup target add wasm32-unknown-unknown
+      - run: cargo install trunk
+      - run: trunk build --release --public-url mental-arithmetic mental-arithmetic-gui/index.html
+      - uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./mental-arithmetic-gui/dist
+
+  gui-release:
+    needs: gui-build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Github Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
