@@ -13,15 +13,15 @@ To achieve the objectives, i built the program as an application to support dail
 
 This project is split into the following.
 
-Domain
+* Domain
   - mental-arithmetic-domain
-Usecase
+* Usecase
   - mental-arithmetic-usecase
-Controller/Presentation
+* Controller/Presentation
   - mental-arithmetic-adapter
-Infrastructure
+* Infrastructure
   - mental-arithmetic-infrastructure
-Framework
+* Framework
   - mental-arithmetic-cui
   - mental-arithmetic-gui
 
